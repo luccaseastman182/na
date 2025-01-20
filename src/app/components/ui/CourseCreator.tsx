@@ -53,8 +53,11 @@ const CourseCreator = () => {
       alert('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);
-      setError(error);
-      alert('Failed to create course');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          error.message ||
+                          'Failed to create course';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -23,35 +23,14 @@ const useStudentStore = create((set) => ({
   certificates: [],
   error: null,
   loading: false,
-  fetchCourses: async (studentId) => {
+  fetchStudentData: async (studentId) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get(`/api/students/${studentId}/courses`);
-      set({ courses: response.data });
+      const response = await axios.get(`/api/students/${studentId}/data`);
+      const { courses, progress, certificates } = response.data;
+      set({ courses, progress, certificates });
     } catch (error) {
-      set({ error: 'Error fetching courses' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  fetchProgress: async (studentId) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.get(`/api/students/${studentId}/progress`);
-      set({ progress: response.data });
-    } catch (error) {
-      set({ error: 'Error fetching progress' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  fetchCertificates: async (studentId) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.get(`/api/students/${studentId}/certificates`);
-      set({ certificates: response.data });
-    } catch (error) {
-      set({ error: 'Error fetching certificates' });
+      set({ error: 'Error fetching student data' });
     } finally {
       set({ loading: false });
     }
@@ -59,16 +38,14 @@ const useStudentStore = create((set) => ({
 }));
 
 const StudentPortal = ({ studentId }) => {
-  const { courses, progress, certificates, error, loading, fetchCourses, fetchProgress, fetchCertificates } = useStudentStore();
+  const { courses, progress, certificates, error, loading, fetchStudentData } = useStudentStore();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(courseSchema),
   });
 
   useEffect(() => {
-    fetchCourses(studentId);
-    fetchProgress(studentId);
-    fetchCertificates(studentId);
-  }, [studentId, fetchCourses, fetchProgress, fetchCertificates]);
+    fetchStudentData(studentId);
+  }, [studentId, fetchStudentData]);
 
   return (
     <ProtectedRoute>
