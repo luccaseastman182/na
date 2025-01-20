@@ -5,8 +5,6 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { create } from 'zustand';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
 
 const moduleSchema = z.object({
   modules: z.array(z.object({
@@ -80,8 +78,8 @@ const Module = ({ courseId }) => {
     <ProtectedRoute>
       <div className="container mx-auto py-8 bg-gray-900 text-white">
         <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
-        {loading && <LoadingSpinner />}
-        {error && <ErrorHandling error={error} />}
+        {loading && <div>Loading...</div>}
+        {error && <div>Error: {error.message}</div>}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md">
           <ul className="list-disc list-inside">
             {modules.map((module) => (

@@ -3,34 +3,14 @@ import axios from 'axios';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { create } from 'zustand';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
+import { useCourseStore } from './AdminPortal';
 
 const eligibilitySchema = z.object({
   isEligible: z.boolean(),
 });
 
-const useEligibilityStore = create((set) => ({
-  isEligible: false,
-  error: null,
-  loading: false,
-  checkEligibility: async (courseId) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.get(`/api/courses/${courseId}/eligibility`);
-      const parsedResponse = eligibilitySchema.parse(response.data);
-      set({ isEligible: parsedResponse.isEligible });
-    } catch (error) {
-      set({ error: 'Error checking eligibility' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-}));
-
 const TakeExamButton = ({ courseId }) => {
-  const { isEligible, error, loading, checkEligibility } = useEligibilityStore();
+  const { isEligible, error, loading, checkEligibility } = useCourseStore();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(eligibilitySchema),
   });
@@ -47,8 +27,13 @@ const TakeExamButton = ({ courseId }) => {
 
   return (
     <div>
-      {error && <ErrorHandling error={error} />}
-      {loading && <LoadingSpinner />}
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">Error:</strong>
+        <span className="block sm:inline">{error}</span>
+      </div>}
+      {loading && <div className="flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-900"></div>
+      </div>}
       <button
         className={`px-4 py-2 rounded ${isEligible ? 'bg-blue-500 text-white' : 'bg-gray-400'}`}
         onClick={handleTakeExam}
