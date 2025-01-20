@@ -46,9 +46,20 @@ const useModuleStore = create((set) => ({
       set({ loading: false });
     }
   },
-  handleModuleComplete: (moduleId) => set((state) => ({
-    completedModules: [...state.completedModules, moduleId],
-  })),
+  handleModuleComplete: async (moduleId) => {
+    set({ loading: true, error: null });
+    try {
+      await axios.post(`/api/modules/${moduleId}/complete`);
+      set((state) => ({
+        completedModules: [...state.completedModules, moduleId],
+      }));
+    } catch (error) {
+      console.error('Error marking module as complete:', error);
+      set({ error: 'Error marking module as complete' });
+    } finally {
+      set({ loading: false });
+    }
+  },
   handleButtonClick: () => set({ showPopup: true }),
   handleConfirm: () => set({ showPopup: false }),
   handleCancel: () => set({ showPopup: false }),
@@ -76,6 +87,13 @@ const Module = ({ courseId }) => {
             {modules.map((module) => (
               <li key={module.id} className="mb-2">
                 {module.title}
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+                  onClick={() => handleModuleComplete(module.id)}
+                  disabled={completedModules.includes(module.id)}
+                >
+                  {completedModules.includes(module.id) ? 'Module Completed' : 'Mark Module as Complete'}
+                </button>
                 {showPopup && (
                   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-4 rounded shadow-md">
