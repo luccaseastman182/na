@@ -2,6 +2,7 @@ import React from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -23,9 +24,14 @@ const CourseCreator = () => {
     name: 'modules',
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Add logic to handle course creation
+  const onSubmit = async (data) => {
+    try {
+      await axios.post('/api/courses', data);
+      alert('Course created successfully');
+    } catch (error) {
+      console.error('Error creating course:', error);
+      alert('Failed to create course');
+    }
   };
 
   return (

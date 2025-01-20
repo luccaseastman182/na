@@ -12,6 +12,9 @@ const HomePage = () => {
           <p className="text-lg mb-8">Your gateway to professional certification in business studies.</p>
           <p className="text-lg mb-8">Explore our text-based courses and gain lifetime access to valuable learning materials.</p>
           <p className="text-lg mb-8">Enroll now for just $299 and start your journey towards professional excellence.</p>
+          <div className="mt-8">
+            <a href="/courses" className="text-blue-500 hover:underline">View Course Catalog</a>
+          </div>
         </section>
       </main>
       <Footer />

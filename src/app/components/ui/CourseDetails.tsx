@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 
 const CourseDetails = () => {
   const [course, setCourse] = useState(null);
+  const [progress, setProgress] = useState(0);
   const router = useRouter();
   const { id } = router.query;
 
@@ -18,7 +19,17 @@ const CourseDetails = () => {
         }
       };
 
+      const fetchProgress = async () => {
+        try {
+          const response = await axios.get(`/api/courses/${id}/progress`);
+          setProgress(response.data.progress);
+        } catch (error) {
+          console.error('Error fetching course progress:', error);
+        }
+      };
+
       fetchCourseDetails();
+      fetchProgress();
     }
   }, [id]);
 
@@ -39,6 +50,9 @@ const CourseDetails = () => {
             </li>
           ))}
         </ul>
+        <div className="mt-4">
+          <p>Progress: {progress} modules completed out of {course.modules.length}</p>
+        </div>
       </div>
     </div>
   );
