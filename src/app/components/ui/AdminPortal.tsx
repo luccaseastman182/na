@@ -9,6 +9,8 @@ import dynamic from 'next/dynamic';
 import ProtectedRoute from './ProtectedRoute';
 import CourseCreator from './CourseCreator';
 import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -53,6 +55,9 @@ const AdminPortal = () => {
     name: 'topics.modules',
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
@@ -66,12 +71,17 @@ const AdminPortal = () => {
   }, [fetchCourses]);
 
   const onSubmit = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
       await addCourse(data);
       alert('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);
+      setError(error);
       alert('Failed to create course');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,6 +162,8 @@ const AdminPortal = () => {
           </div>
           <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
         </form>
+        {loading && <LoadingSpinner />}
+        {error && <ErrorHandling error={error} />}
         <h2 className="text-xl font-bold mb-4">Existing Courses</h2>
         <ul>
           {courses.map((course) => (

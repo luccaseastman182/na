@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const answerSchema = z.object({
   answers: z.record(z.string().min(1, 'Answer is required')),
@@ -18,28 +20,38 @@ const useExamStore = create((set) => ({
   attempts: 0,
   examDate: null,
   isEligible: false,
+  loading: false,
   fetchQuestions: async (courseId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/courses/${courseId}/exam`);
       set({ questions: response.data, examDate: new Date().toISOString() });
     } catch (error) {
       set({ error: 'Error fetching exam questions' });
+    } finally {
+      set({ loading: false });
     }
   },
   checkEligibility: async (courseId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/courses/${courseId}/eligibility`);
       set({ isEligible: response.data.isEligible });
     } catch (error) {
       set({ error: 'Error checking eligibility' });
+    } finally {
+      set({ loading: false });
     }
   },
   submitExam: async (courseId, answers) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.post(`/api/courses/${courseId}/exam/submit`, { answers });
       set((state) => ({ score: response.data.score, attempts: state.attempts + 1 }));
     } catch (error) {
       set({ error: 'Error submitting exam' });
+    } finally {
+      set({ loading: false });
     }
   },
   setAnswer: (questionId, answer) => set((state) => ({
@@ -51,7 +63,7 @@ const useExamStore = create((set) => ({
 }));
 
 const Exam = ({ courseId }) => {
-  const { questions, answers, score, error, attempts, examDate, isEligible, fetchQuestions, checkEligibility, submitExam, setAnswer } = useExamStore();
+  const { questions, answers, score, error, attempts, examDate, isEligible, loading, fetchQuestions, checkEligibility, submitExam, setAnswer } = useExamStore();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(answerSchema),
   });
@@ -68,7 +80,8 @@ const Exam = ({ courseId }) => {
     <ProtectedRoute>
       <div className="container mx-auto py-8 bg-gray-900 text-white">
         <h2 className="text-2xl font-bold mb-4 text-gray-100">Final Exam</h2>
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <ErrorHandling error={error} />}
+        {loading && <LoadingSpinner />}
         {score !== null ? (
           <div className="bg-gray-800 p-4 rounded-lg shadow-md">
             <p className="text-lg text-gray-300">Your score: {score}</p>
