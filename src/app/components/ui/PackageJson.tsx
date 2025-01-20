@@ -20,7 +20,10 @@
     "zod": "^3.11.6",
     "prisma": "^3.5.0",
     "zustand": "^3.5.0",
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "clsx": "^1.1.1",
+    "autoprefixer": "^10.2.6",
+    "authjs": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",

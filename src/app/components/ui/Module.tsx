@@ -1,50 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProtectedRoute from './ProtectedRoute';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useStore } from 'zustand';
+
+const moduleSchema = z.object({
+  modules: z.array(z.object({
+    id: z.string(),
+    title: z.string().min(1, 'Module title is required'),
+  })),
+  completedModules: z.array(z.string()),
+});
+
+const useModuleStore = create((set) => ({
+  modules: [],
+  completedModules: [],
+  showPopup: false,
+  fetchModules: async (courseId) => {
+    try {
+      const response = await axios.get(`/api/courses/${courseId}/modules`);
+      set({ modules: response.data });
+    } catch (error) {
+      console.error('Error fetching modules:', error);
+    }
+  },
+  fetchCompletedModules: async (courseId) => {
+    try {
+      const response = await axios.get(`/api/courses/${courseId}/completed-modules`);
+      set({ completedModules: response.data });
+    } catch (error) {
+      console.error('Error fetching completed modules:', error);
+    }
+  },
+  handleModuleComplete: (moduleId) => set((state) => ({
+    completedModules: [...state.completedModules, moduleId],
+  })),
+  handleButtonClick: () => set({ showPopup: true }),
+  handleConfirm: () => set({ showPopup: false }),
+  handleCancel: () => set({ showPopup: false }),
+}));
 
 const Module = ({ courseId }) => {
-  const [modules, setModules] = useState([]);
-  const [completedModules, setCompletedModules] = useState([]);
-  const [showPopup, setShowPopup] = useState(false);
+  const { modules, completedModules, showPopup, fetchModules, fetchCompletedModules, handleModuleComplete, handleButtonClick, handleConfirm, handleCancel } = useModuleStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(moduleSchema),
+  });
 
   useEffect(() => {
-    const fetchModules = async () => {
-      try {
-        const response = await axios.get(`/api/courses/${courseId}/modules`);
-        setModules(response.data);
-      } catch (error) {
-        console.error('Error fetching modules:', error);
-      }
-    };
-
-    const fetchCompletedModules = async () => {
-      try {
-        const response = await axios.get(`/api/courses/${courseId}/completed-modules`);
-        setCompletedModules(response.data);
-      } catch (error) {
-        console.error('Error fetching completed modules:', error);
-      }
-    };
-
-    fetchModules();
-    fetchCompletedModules();
-  }, [courseId]);
-
-  const handleModuleComplete = (moduleId) => {
-    setCompletedModules([...completedModules, moduleId]);
-  };
-
-  const handleButtonClick = () => {
-    setShowPopup(true);
-  };
-
-  const handleConfirm = () => {
-    setShowPopup(false);
-  };
-
-  const handleCancel = () => {
-    setShowPopup(false);
-  };
+    fetchModules(courseId);
+    fetchCompletedModules(courseId);
+  }, [courseId, fetchModules, fetchCompletedModules]);
 
   return (
     <ProtectedRoute>

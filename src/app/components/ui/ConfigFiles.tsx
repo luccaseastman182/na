@@ -1,7 +1,10 @@
 module.exports = {
   plugins: {
     tailwindcss: {},
-    autoprefixer: {},
+    autoprefixer: {
+      overrideBrowserslist: ['>1%', 'last 4 versions', 'Firefox ESR', 'not ie < 9'],
+      flexbox: 'no-2009',
+    },
   },
 };
 
@@ -29,6 +32,18 @@ module.exports = {
   rules: {
     'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'prettier/prettier': [
+      'error',
+      {
+        singleQuote: true,
+        semi: false,
+        trailingComma: 'all',
+        printWidth: 80,
+        tabWidth: 2,
+      },
+    ],
   },
 };
 
@@ -38,4 +53,5 @@ module.exports = {
   trailingComma: 'all',
   printWidth: 80,
   tabWidth: 2,
+  endOfLine: 'auto',
 };
