@@ -1,0 +1,99 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import ProtectedRoute from './ProtectedRoute';
+import { z } from 'zod';
+import { useStore } from 'zustand';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const courseSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, 'Title is required'),
+  progress: z.number().min(0).max(100),
+  certificates: z.array(z.object({
+    id: z.string(),
+    title: z.string().min(1, 'Certificate title is required'),
+    url: z.string().url('Invalid URL'),
+  })),
+});
+
+const useStudentStore = create((set) => ({
+  courses: [],
+  progress: {},
+  certificates: [],
+  error: null,
+  fetchCourses: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/courses`);
+      set({ courses: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching courses' });
+    }
+  },
+  fetchProgress: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/progress`);
+      set({ progress: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching progress' });
+    }
+  },
+  fetchCertificates: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/certificates`);
+      set({ certificates: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching certificates' });
+    }
+  },
+}));
+
+const StudentPortal = ({ studentId }) => {
+  const { courses, progress, certificates, error, fetchCourses, fetchProgress, fetchCertificates } = useStudentStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(courseSchema),
+  });
+
+  useEffect(() => {
+    fetchCourses(studentId);
+    fetchProgress(studentId);
+    fetchCertificates(studentId);
+  }, [studentId, fetchCourses, fetchProgress, fetchCertificates]);
+
+  return (
+    <ProtectedRoute>
+      <div className="container mx-auto py-8 bg-gray-900 text-white">
+        <h2 className="text-2xl font-bold mb-4 text-gray-100">Student Portal</h2>
+        {error && <p className="text-red-500">{error}</p>}
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-gray-100">My Courses</h3>
+          <ul className="list-disc list-inside">
+            {courses.map((course) => (
+              <li key={course.id} className="mb-2 text-gray-300">
+                {course.title}
+                <div className="mt-2">
+                  <p>Progress: {progress[course.id] || 0}%</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-4 text-gray-100">My Certificates</h3>
+          <ul className="list-disc list-inside">
+            {certificates.map((certificate) => (
+              <li key={certificate.id} className="mb-2 text-gray-300">
+                {certificate.title}
+                <div className="mt-2">
+                  <a href={certificate.url} className="text-blue-500 hover:underline">Download Certificate</a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+};
+
+export default StudentPortal;
