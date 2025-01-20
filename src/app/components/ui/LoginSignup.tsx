@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { authjs } from 'authjs';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),

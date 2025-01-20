@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProtectedRoute from './ProtectedRoute';
 import { z } from 'zod';
-import { useStore } from 'zustand';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { create } from 'zustand';
 
 const courseSchema = z.object({
   id: z.string(),

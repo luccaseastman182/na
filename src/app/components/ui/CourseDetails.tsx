@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { z } from 'zod';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
