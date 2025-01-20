@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { authjs } from 'authjs';
 import { create } from 'zustand';
+import Notification from './Notification';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -17,22 +18,22 @@ const useAuthStore = create((set) => ({
     try {
       const response = await authjs.login(data);
       set({ user: response.data });
-      alert('Login successful');
+      setNotification({ message: 'Login successful', type: 'success' });
     } catch (error) {
       console.error('Error logging in:', error);
       set({ error });
-      alert('Failed to login');
+      setNotification({ message: 'Failed to login', type: 'error' });
     }
   },
   signup: async (data) => {
     try {
       const response = await authjs.signup(data);
       set({ user: response.data });
-      alert('Signup successful');
+      setNotification({ message: 'Signup successful', type: 'success' });
     } catch (error) {
       console.error('Error signing up:', error);
       set({ error });
-      alert('Failed to signup');
+      setNotification({ message: 'Failed to signup', type: 'error' });
     }
   },
 }));
@@ -46,6 +47,7 @@ const LoginSignup = () => {
   const { login, signup } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState({ message: '', type: '' });
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -103,6 +105,7 @@ const LoginSignup = () => {
             {isLogin ? 'Signup' : 'Login'}
           </button>
         </p>
+        <Notification message={notification.message} type={notification.type} />
       </div>
     </div>
   );
