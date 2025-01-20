@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { z } from 'zod';
+import { useStore } from 'zustand';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const eligibilitySchema = z.object({
+  isEligible: z.boolean(),
+});
+
+const useEligibilityStore = create((set) => ({
+  isEligible: false,
+  error: null,
+  checkEligibility: async (courseId) => {
+    try {
+      const response = await axios.get(`/api/courses/${courseId}/eligibility`);
+      const parsedResponse = eligibilitySchema.parse(response.data);
+      set({ isEligible: parsedResponse.isEligible });
+    } catch (error) {
+      set({ error: 'Error checking eligibility' });
+    }
+  },
+}));
 
 const TakeExamButton = ({ courseId }) => {
-  const [isEligible, setIsEligible] = useState(false);
-  const [error, setError] = useState(null);
+  const { isEligible, error, checkEligibility } = useEligibilityStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(eligibilitySchema),
+  });
 
   useEffect(() => {
-    const checkEligibility = async () => {
-      try {
-        const response = await axios.get(`/api/courses/${courseId}/eligibility`);
-        setIsEligible(response.data.isEligible);
-      } catch (error) {
-        setError('Error checking eligibility');
-      }
-    };
-
-    checkEligibility();
-  }, [courseId]);
+    checkEligibility(courseId);
+  }, [courseId, checkEligibility]);
 
   const handleTakeExam = () => {
     if (isEligible) {

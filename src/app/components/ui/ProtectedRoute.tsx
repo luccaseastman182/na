@@ -2,7 +2,7 @@ import React from 'react';
 import { authjs } from 'authjs';
 import { useRouter } from 'next/navigation';
 
-const ProtectedRoute = ({ children, roles }) => {
+const ProtectedRoute = ({ children, roles, redirectPath = '/unauthorized' }) => {
   const { data: session, status } = authjs();
   const router = useRouter();
 
@@ -12,9 +12,9 @@ const ProtectedRoute = ({ children, roles }) => {
     if (!session) {
       router.push('/login');
     } else if (roles && !roles.includes(session.user.role)) {
-      router.push('/unauthorized');
+      router.push(redirectPath);
     }
-  }, [session, status, router, roles]);
+  }, [session, status, router, roles, redirectPath]);
 
   if (status === 'loading' || !session) {
     return <div>Loading...</div>;
