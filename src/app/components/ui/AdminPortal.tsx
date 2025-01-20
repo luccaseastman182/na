@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import ProtectedRoute from './ProtectedRoute';
-import { useStore } from 'zustand';
+import CourseCreator from './CourseCreator';
+import { create } from 'zustand';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -81,8 +82,6 @@ const AdminPortal = () => {
   if (session?.user.role !== 'admin') {
     return <div>Access denied</div>;
   }
-
-  const CourseCreator = dynamic(() => import('./CourseCreator'), { ssr: false });
 
   return (
     <ProtectedRoute roles={['admin']}>

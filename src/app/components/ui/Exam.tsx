@@ -4,7 +4,7 @@ import ProtectedRoute from './ProtectedRoute';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
 
 const answerSchema = z.object({
   answers: z.record(z.string().min(1, 'Answer is required')),

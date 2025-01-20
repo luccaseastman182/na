@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { z } from 'zod';
-import { useStore } from 'zustand';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { create } from 'zustand';
 
 const eligibilitySchema = z.object({
   isEligible: z.boolean(),
