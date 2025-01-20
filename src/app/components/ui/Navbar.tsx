@@ -12,6 +12,8 @@ const Navbar = () => {
           <Link href="/courses" className="text-gray-300 hover:text-white">Courses</Link>
           <Link href="/login" className="text-gray-300 hover:text-white">Login</Link>
           <Link href="/signup" className="text-gray-300 hover:text-white">Signup</Link>
+          <Link href="/courselist" className="text-gray-300 hover:text-white">Course List</Link>
+          <Link href="/course/[id]" className="text-gray-300 hover:text-white">Course Details</Link>
         </div>
       </div>
     </nav>

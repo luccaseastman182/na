@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -14,11 +15,35 @@ const LoginSignup = () => {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (isLogin) {
       // Handle login logic
+      try {
+        const response = await axios.post('/api/auth/login', data);
+        alert('Login successful');
+      } catch (error) {
+        console.error('Error logging in:', error);
+        alert('Failed to login');
+      }
     } else {
       // Handle signup logic
+      try {
+        const response = await axios.post('/api/auth/signup', data);
+        alert('Signup successful');
+      } catch (error) {
+        console.error('Error signing up:', error);
+        alert('Failed to signup');
+      }
+    }
+  };
+
+  const handleAccountUpdate = async (data) => {
+    try {
+      const response = await axios.put('/api/auth/update', data);
+      alert('Account updated successfully');
+    } catch (error) {
+      console.error('Error updating account:', error);
+      alert('Failed to update account');
     }
   };
 
@@ -59,6 +84,14 @@ const LoginSignup = () => {
             className="text-blue-500 underline"
           >
             {isLogin ? 'Signup' : 'Login'}
+          </button>
+        </p>
+        <p className="mt-4 text-center">
+          <button
+            onClick={() => handleAccountUpdate({ email: 'newemail@example.com', password: 'newpassword' })}
+            className="text-blue-500 underline"
+          >
+            Update Account
           </button>
         </p>
       </div>
