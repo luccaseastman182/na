@@ -52,8 +52,8 @@ const Exam = ({ courseId }) => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold mb-4">Final Exam</h2>
+    <div className="container mx-auto py-8 bg-gray-100">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Final Exam</h2>
       {error && <p className="text-red-500">{error}</p>}
       {score !== null ? (
         <div className="bg-white p-4 rounded-lg shadow-md">

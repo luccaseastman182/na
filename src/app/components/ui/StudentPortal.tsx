@@ -41,11 +41,11 @@ const StudentPortal = ({ studentId }) => {
   }, [studentId]);
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold mb-4">Student Portal</h2>
+    <div className="container mx-auto py-8 bg-gray-100">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Student Portal</h2>
       {error && <p className="text-red-500">{error}</p>}
       <div className="bg-white p-4 rounded-lg shadow-md mb-8">
-        <h3 className="text-xl font-semibold mb-4">My Courses</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">My Courses</h3>
         <ul className="list-disc list-inside">
           {courses.map((course) => (
             <li key={course.id} className="mb-2">
@@ -58,7 +58,7 @@ const StudentPortal = ({ studentId }) => {
         </ul>
       </div>
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-4">My Certificates</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">My Certificates</h3>
         <ul className="list-disc list-inside">
           {certificates.map((certificate) => (
             <li key={certificate.id} className="mb-2">

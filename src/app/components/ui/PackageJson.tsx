@@ -8,10 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "update-dependencies": "npx npm-check-updates -u && npm install",
+    "install": "npm install"
   },
   "dependencies": {
-    "next": "^15.1.2",
+    "next": "^15.1.3",
     "react": "^19.0.0",
     "typescript": "^5.7.2",
     "tailwindcss": "^2.2.19",

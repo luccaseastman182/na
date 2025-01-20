@@ -3,15 +3,19 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import MarkCompleteButton from './MarkCompleteButton';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   price: z.number().min(1, 'Price is required'),
-  modules: z.array(z.object({
-    title: z.string().min(1, 'Module title is required'),
-    content: z.string().min(1, 'Module content is required'),
-  })).min(1, 'At least one module is required'),
+  topics: z.array(z.object({
+    title: z.string().min(1, 'Topic title is required'),
+    modules: z.array(z.object({
+      title: z.string().min(1, 'Module title is required'),
+      content: z.string().min(1, 'Module content is required'),
+    })).min(8, 'Each topic must have at least 8 modules'),
+  })).min(7, 'Course must have at least 7 topics'),
 });
 
 const CourseCreator = () => {
@@ -19,9 +23,14 @@ const CourseCreator = () => {
     resolver: zodResolver(courseSchema),
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: topicFields, append: appendTopic, remove: removeTopic } = useFieldArray({
     control,
-    name: 'modules',
+    name: 'topics',
+  });
+
+  const { fields: moduleFields, append: appendModule, remove: removeModule } = useFieldArray({
+    control,
+    name: 'topics.modules',
   });
 
   const onSubmit = async (data) => {
@@ -65,26 +74,41 @@ const CourseCreator = () => {
           {errors.price && <p className="text-red-500">{errors.price.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Modules</label>
-          {fields.map((field, index) => (
-            <div key={field.id} className="mb-4">
-              <label className="block text-gray-700">Module Title</label>
+          <label className="block text-gray-700">Topics</label>
+          {topicFields.map((topic, topicIndex) => (
+            <div key={topic.id} className="mb-4">
+              <label className="block text-gray-700">Topic Title</label>
               <input
                 type="text"
-                {...register(`modules.${index}.title`)}
+                {...register(`topics.${topicIndex}.title`)}
                 className="w-full p-2 border border-gray-300 rounded"
               />
-              {errors.modules?.[index]?.title && <p className="text-red-500">{errors.modules[index].title.message}</p>}
-              <label className="block text-gray-700">Module Content</label>
-              <textarea
-                {...register(`modules.${index}.content`)}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
-              {errors.modules?.[index]?.content && <p className="text-red-500">{errors.modules[index].content.message}</p>}
-              <button type="button" onClick={() => remove(index)} className="bg-red-500 text-white p-2 rounded mt-2">Remove Module</button>
+              {errors.topics?.[topicIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].title.message}</p>}
+              <label className="block text-gray-700">Modules</label>
+              {moduleFields.map((module, moduleIndex) => (
+                <div key={module.id} className="mb-4">
+                  <label className="block text-gray-700">Module Title</label>
+                  <input
+                    type="text"
+                    {...register(`topics.${topicIndex}.modules.${moduleIndex}.title`)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  />
+                  {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].title.message}</p>}
+                  <label className="block text-gray-700">Module Content</label>
+                  <textarea
+                    {...register(`topics.${topicIndex}.modules.${moduleIndex}.content`)}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  />
+                  {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.content && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].content.message}</p>}
+                  <MarkCompleteButton moduleId={module.id} onComplete={() => {}} />
+                  <button type="button" onClick={() => removeModule(moduleIndex)} className="bg-red-500 text-white p-2 rounded mt-2">Remove Module</button>
+                </div>
+              ))}
+              <button type="button" onClick={() => appendModule({ title: '', content: '' })} className="bg-blue-500 text-white p-2 rounded">Add Module</button>
+              <button type="button" onClick={() => removeTopic(topicIndex)} className="bg-red-500 text-white p-2 rounded mt-2">Remove Topic</button>
             </div>
           ))}
-          <button type="button" onClick={() => append({ title: '', content: '' })} className="bg-blue-500 text-white p-2 rounded">Add Module</button>
+          <button type="button" onClick={() => appendTopic({ title: '', modules: [{ title: '', content: '' }] })} className="bg-blue-500 text-white p-2 rounded">Add Topic</button>
         </div>
         <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
       </form>

@@ -10,6 +10,7 @@ const Footer = () => {
           <a href="https://www.twitter.com/nsbscertified" className="mx-2">Twitter</a>
           <a href="https://www.linkedin.com/company/nsbscertified" className="mx-2">LinkedIn</a>
         </div>
+        <p className="mt-4">© 2023 National Society of Business Sciences (NSBS)</p>
       </div>
     </footer>
   );

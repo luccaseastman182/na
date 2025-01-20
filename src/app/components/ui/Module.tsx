@@ -5,6 +5,7 @@ import MarkCompleteButton from './MarkCompleteButton';
 const Module = ({ courseId }) => {
   const [modules, setModules] = useState([]);
   const [completedModules, setCompletedModules] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -33,6 +34,18 @@ const Module = ({ courseId }) => {
     setCompletedModules([...completedModules, moduleId]);
   };
 
+  const handleButtonClick = () => {
+    setShowPopup(true);
+  };
+
+  const handleConfirm = () => {
+    setShowPopup(false);
+  };
+
+  const handleCancel = () => {
+    setShowPopup(false);
+  };
+
   return (
     <div className="container mx-auto py-8">
       <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
@@ -42,6 +55,21 @@ const Module = ({ courseId }) => {
             <li key={module.id} className="mb-2">
               {module.title}
               <MarkCompleteButton moduleId={module.id} onComplete={() => handleModuleComplete(module.id)} />
+              {showPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="bg-white p-4 rounded shadow-md">
+                    <p>Are you sure you want to mark this module as complete?</p>
+                    <div className="mt-4 flex justify-end">
+                      <button className="px-4 py-2 bg-gray-300 rounded mr-2" onClick={handleCancel}>
+                        Cancel
+                      </button>
+                      <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleConfirm}>
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
