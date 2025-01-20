@@ -37,17 +37,6 @@ const useAuthStore = create((set) => ({
       alert('Failed to signup');
     }
   },
-  updateAccount: async (data) => {
-    try {
-      const response = await authjs.updateAccount(data);
-      set({ user: response.data });
-      alert('Account updated successfully');
-    } catch (error) {
-      console.error('Error updating account:', error);
-      set({ error });
-      alert('Failed to update account');
-    }
-  },
 }));
 
 const LoginSignup = () => {
@@ -56,7 +45,7 @@ const LoginSignup = () => {
     resolver: zodResolver(schema),
   });
 
-  const { login, signup, updateAccount } = useAuthStore();
+  const { login, signup } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -116,14 +105,6 @@ const LoginSignup = () => {
             className="text-blue-500 underline"
           >
             {isLogin ? 'Signup' : 'Login'}
-          </button>
-        </p>
-        <p className="mt-4 text-center text-gray-300">
-          <button
-            onClick={() => updateAccount({ email: 'newemail@example.com', password: 'newpassword' })}
-            className="text-blue-500 underline"
-          >
-            Update Account
           </button>
         </p>
       </div>
