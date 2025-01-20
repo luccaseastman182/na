@@ -5,8 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { authjs } from 'authjs';
 import { create } from 'zustand';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -96,8 +94,6 @@ const LoginSignup = () => {
             {isLogin ? 'Login' : 'Signup'}
           </button>
         </form>
-        {loading && <LoadingSpinner />}
-        {error && <ErrorHandling error={error} />}
         <p className="mt-4 text-center text-gray-300">
           {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
           <button

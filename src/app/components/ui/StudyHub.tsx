@@ -3,8 +3,6 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { authjs } from 'authjs';
 import ProtectedRoute from './ProtectedRoute';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
 
 const StudyHub = () => {
   const { data: session, status } = authjs();
@@ -60,11 +58,11 @@ const StudyHub = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <ErrorHandling error={error} />;
+    return <div>Error: {error}</div>;
   }
 
   return (

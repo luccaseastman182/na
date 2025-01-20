@@ -3,9 +3,6 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { z } from 'zod';
-import { create } from 'zustand';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -20,35 +17,6 @@ const courseSchema = z.object({
   })).min(7, 'Course must have at least 7 topics'),
 });
 
-const useCourseStore = create((set) => ({
-  course: null,
-  progress: 0,
-  error: null,
-  loading: false,
-  fetchCourseDetails: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.get(`/api/courses/${id}`);
-      set({ course: response.data });
-    } catch (error) {
-      set({ error: 'Error fetching course details' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  fetchProgress: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await axios.get(`/api/courses/${id}/progress`);
-      set({ progress: response.data.progress });
-    } catch (error) {
-      set({ error: 'Error fetching progress' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-}));
-
 const CourseDetails = () => {
   const { course, progress, error, loading, fetchCourseDetails, fetchProgress } = useCourseStore();
   const router = useRouter();
@@ -62,11 +30,11 @@ const CourseDetails = () => {
   }, [id, fetchCourseDetails, fetchProgress]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return <ErrorHandling error={error} />;
+    return <div>Error: {error.message}</div>;
   }
 
   if (!course) {

@@ -4,8 +4,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { create } from 'zustand';
-import LoadingSpinner from './LoadingSpinner';
-import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -130,8 +128,6 @@ const CourseCreator = () => {
         </div>
         <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
       </form>
-      {loading && <LoadingSpinner />}
-      {error && <ErrorHandling error={error} />}
     </div>
   );
 };
