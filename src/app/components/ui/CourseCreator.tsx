@@ -3,6 +3,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { useStore } from 'zustand';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -16,6 +17,14 @@ const courseSchema = z.object({
     })).min(8, 'Each topic must have at least 8 modules'),
   })).min(7, 'Course must have at least 7 topics'),
 });
+
+const useCourseStore = create((set) => ({
+  courses: [],
+  addCourse: async (data) => {
+    await axios.post('/api/courses', data);
+    set((state) => ({ courses: [...state.courses, data] }));
+  },
+}));
 
 const CourseCreator = () => {
   const { register, control, handleSubmit, formState: { errors } } = useForm({
@@ -32,9 +41,11 @@ const CourseCreator = () => {
     name: 'topics.modules',
   });
 
+  const { addCourse } = useCourseStore();
+
   const onSubmit = async (data) => {
     try {
-      await axios.post('/api/courses', data);
+      await addCourse(data);
       alert('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);

@@ -4,11 +4,46 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { authjs } from 'authjs';
+import { useStore } from 'zustand';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
+
+const useAuthStore = create((set) => ({
+  user: null,
+  login: async (data) => {
+    try {
+      const response = await authjs.login(data);
+      set({ user: response.data });
+      alert('Login successful');
+    } catch (error) {
+      console.error('Error logging in:', error);
+      alert('Failed to login');
+    }
+  },
+  signup: async (data) => {
+    try {
+      const response = await authjs.signup(data);
+      set({ user: response.data });
+      alert('Signup successful');
+    } catch (error) {
+      console.error('Error signing up:', error);
+      alert('Failed to signup');
+    }
+  },
+  updateAccount: async (data) => {
+    try {
+      const response = await authjs.updateAccount(data);
+      set({ user: response.data });
+      alert('Account updated successfully');
+    } catch (error) {
+      console.error('Error updating account:', error);
+      alert('Failed to update account');
+    }
+  },
+}));
 
 const LoginSignup = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,35 +51,13 @@ const LoginSignup = () => {
     resolver: zodResolver(schema),
   });
 
+  const { login, signup, updateAccount } = useAuthStore();
+
   const onSubmit = async (data) => {
     if (isLogin) {
-      // Handle login logic
-      try {
-        const response = await authjs.login(data);
-        alert('Login successful');
-      } catch (error) {
-        console.error('Error logging in:', error);
-        alert('Failed to login');
-      }
+      await login(data);
     } else {
-      // Handle signup logic
-      try {
-        const response = await authjs.signup(data);
-        alert('Signup successful');
-      } catch (error) {
-        console.error('Error signing up:', error);
-        alert('Failed to signup');
-      }
-    }
-  };
-
-  const handleAccountUpdate = async (data) => {
-    try {
-      const response = await authjs.updateAccount(data);
-      alert('Account updated successfully');
-    } catch (error) {
-      console.error('Error updating account:', error);
-      alert('Failed to update account');
+      await signup(data);
     }
   };
 
@@ -89,7 +102,7 @@ const LoginSignup = () => {
         </p>
         <p className="mt-4 text-center text-gray-300">
           <button
-            onClick={() => handleAccountUpdate({ email: 'newemail@example.com', password: 'newpassword' })}
+            onClick={() => updateAccount({ email: 'newemail@example.com', password: 'newpassword' })}
             className="text-blue-500 underline"
           >
             Update Account

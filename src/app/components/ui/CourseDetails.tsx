@@ -2,38 +2,46 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import ProtectedRoute from './ProtectedRoute';
+import { z } from 'zod';
+import { useStore } from 'zustand';
+
+const courseSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  price: z.number().min(1, 'Price is required'),
+  topics: z.array(z.object({
+    title: z.string().min(1, 'Topic title is required'),
+    modules: z.array(z.object({
+      title: z.string().min(1, 'Module title is required'),
+      content: z.string().min(1, 'Module content is required'),
+    })).min(8, 'Each topic must have at least 8 modules'),
+  })).min(7, 'Course must have at least 7 topics'),
+});
+
+const useCourseStore = create((set) => ({
+  course: null,
+  progress: 0,
+  fetchCourseDetails: async (id) => {
+    const response = await axios.get(`/api/courses/${id}`);
+    set({ course: response.data });
+  },
+  fetchProgress: async (id) => {
+    const response = await axios.get(`/api/courses/${id}/progress`);
+    set({ progress: response.data.progress });
+  },
+}));
 
 const CourseDetails = () => {
-  const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(0);
+  const { course, progress, fetchCourseDetails, fetchProgress } = useCourseStore();
   const router = useRouter();
   const { id } = router.query;
 
   useEffect(() => {
     if (id) {
-      const fetchCourseDetails = async () => {
-        try {
-          const response = await axios.get(`/api/courses/${id}`);
-          setCourse(response.data);
-        } catch (error) {
-          console.error('Error fetching course details:', error);
-        }
-      };
-
-      const fetchProgress = async () => {
-        try {
-          const response = await axios.get(`/api/courses/${id}/progress`);
-          setProgress(response.data.progress);
-        } catch (error) {
-          console.error('Error fetching course progress:', error);
-        }
-      };
-
-      fetchCourseDetails();
-      fetchProgress();
+      fetchCourseDetails(id);
+      fetchProgress(id);
     }
-  }, [id]);
+  }, [id, fetchCourseDetails, fetchProgress]);
 
   if (!course) {
     return <div>Loading...</div>;
@@ -43,27 +51,25 @@ const CourseDetails = () => {
   const TakeExamButton = dynamic(() => import('./TakeExamButton'), { ssr: false });
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto py-8 bg-gray-900 text-white">
-        <h2 className="text-2xl font-bold mb-4 text-gray-100">{course.title}</h2>
-        <p className="text-gray-300 mb-4">{course.description}</p>
-        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2 text-gray-100">Course Modules</h3>
-          <ul className="list-disc list-inside">
-            {course.modules.map((module) => (
-              <li key={module.id} className="mb-2 text-gray-300">
-                {module.title}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 text-gray-300">
-            <p>Progress: {progress} modules completed out of {course.modules.length}</p>
-          </div>
-          <TakeExamButton courseId={id} />
+    <div className="container mx-auto py-8 bg-gray-900 text-white">
+      <h2 className="text-2xl font-bold mb-4 text-gray-100">{course.title}</h2>
+      <p className="text-gray-300 mb-4">{course.description}</p>
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold mb-2 text-gray-100">Course Modules</h3>
+        <ul className="list-disc list-inside">
+          {course.modules.map((module) => (
+            <li key={module.id} className="mb-2 text-gray-300">
+              {module.title}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 text-gray-300">
+          <p>Progress: {progress} modules completed out of {course.modules.length}</p>
         </div>
-        <StudentPortal studentId={course.studentId} />
+        <TakeExamButton courseId={id} />
       </div>
-    </ProtectedRoute>
+      <StudentPortal studentId={course.studentId} />
+    </div>
   );
 };
 
