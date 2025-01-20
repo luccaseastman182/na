@@ -3,7 +3,6 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import MarkCompleteButton from './MarkCompleteButton';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -44,63 +43,62 @@ const CourseCreator = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-gray-900 text-white">
       <h1 className="text-2xl font-bold mb-4">Create a New Course</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
-          <label className="block text-gray-700">Course Title</label>
+          <label className="block text-gray-300">Course Title</label>
           <input
             type="text"
             {...register('title')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.title && <p className="text-red-500">{errors.title.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Course Description</label>
+          <label className="block text-gray-300">Course Description</label>
           <textarea
             {...register('description')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.description && <p className="text-red-500">{errors.description.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Course Price</label>
+          <label className="block text-gray-300">Course Price</label>
           <input
             type="number"
             {...register('price')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.price && <p className="text-red-500">{errors.price.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Topics</label>
+          <label className="block text-gray-300">Topics</label>
           {topicFields.map((topic, topicIndex) => (
             <div key={topic.id} className="mb-4">
-              <label className="block text-gray-700">Topic Title</label>
+              <label className="block text-gray-300">Topic Title</label>
               <input
                 type="text"
                 {...register(`topics.${topicIndex}.title`)}
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
               />
               {errors.topics?.[topicIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].title.message}</p>}
-              <label className="block text-gray-700">Modules</label>
+              <label className="block text-gray-300">Modules</label>
               {moduleFields.map((module, moduleIndex) => (
                 <div key={module.id} className="mb-4">
-                  <label className="block text-gray-700">Module Title</label>
+                  <label className="block text-gray-300">Module Title</label>
                   <input
                     type="text"
                     {...register(`topics.${topicIndex}.modules.${moduleIndex}.title`)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
                   />
                   {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].title.message}</p>}
-                  <label className="block text-gray-700">Module Content</label>
+                  <label className="block text-gray-300">Module Content</label>
                   <textarea
                     {...register(`topics.${topicIndex}.modules.${moduleIndex}.content`)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
                   />
                   {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.content && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].content.message}</p>}
-                  <MarkCompleteButton moduleId={module.id} onComplete={() => {}} />
                   <button type="button" onClick={() => removeModule(moduleIndex)} className="bg-red-500 text-white p-2 rounded mt-2">Remove Module</button>
                 </div>
               ))}

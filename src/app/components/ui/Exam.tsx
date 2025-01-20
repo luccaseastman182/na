@@ -52,18 +52,18 @@ const Exam = ({ courseId }) => {
   };
 
   return (
-    <div className="container mx-auto py-8 bg-gray-100">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Final Exam</h2>
+    <div className="container mx-auto py-8 bg-gray-900 text-white">
+      <h2 className="text-2xl font-bold mb-4 text-gray-100">Final Exam</h2>
       {error && <p className="text-red-500">{error}</p>}
       {score !== null ? (
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <p className="text-lg">Your score: {score}</p>
-          <p className="text-lg">{score >= 80 ? 'Pass' : 'Fail'}</p>
-          <p className="text-lg">Attempts: {attempts}</p>
-          <p className="text-lg">Exam Date: {examDate}</p>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+          <p className="text-lg text-gray-300">Your score: {score}</p>
+          <p className="text-lg text-gray-300">{score >= 80 ? 'Pass' : 'Fail'}</p>
+          <p className="text-lg text-gray-300">Attempts: {attempts}</p>
+          <p className="text-lg text-gray-300">Exam Date: {examDate}</p>
         </div>
       ) : (
-        <div className="bg-white p-4 rounded-lg shadow-md">
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
           <button onClick={fetchQuestions} className="bg-blue-500 text-white px-4 py-2 rounded mb-4" disabled={!isEligible}>
             {isEligible ? 'Start Exam' : 'Complete All Modules to Take Exam'}
           </button>
@@ -71,9 +71,9 @@ const Exam = ({ courseId }) => {
             <form onSubmit={handleSubmit}>
               {questions.map((question) => (
                 <div key={question.id} className="mb-4">
-                  <p className="text-lg">{question.text}</p>
+                  <p className="text-lg text-gray-300">{question.text}</p>
                   {question.options.map((option) => (
-                    <label key={option} className="block">
+                    <label key={option} className="block text-gray-300">
                       <input
                         type="radio"
                         name={`question-${question.id}`}
