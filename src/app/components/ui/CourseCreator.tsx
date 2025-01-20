@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -42,14 +44,21 @@ const CourseCreator = () => {
   });
 
   const { addCourse } = useCourseStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const onSubmit = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
       await addCourse(data);
       alert('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);
+      setError(error);
       alert('Failed to create course');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,6 +130,8 @@ const CourseCreator = () => {
         </div>
         <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
       </form>
+      {loading && <LoadingSpinner />}
+      {error && <ErrorHandling error={error} />}
     </div>
   );
 };

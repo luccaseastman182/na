@@ -4,7 +4,9 @@ import ProtectedRoute from './ProtectedRoute';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const moduleSchema = z.object({
   modules: z.array(z.object({
@@ -18,20 +20,30 @@ const useModuleStore = create((set) => ({
   modules: [],
   completedModules: [],
   showPopup: false,
+  loading: false,
+  error: null,
   fetchModules: async (courseId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/courses/${courseId}/modules`);
       set({ modules: response.data });
     } catch (error) {
       console.error('Error fetching modules:', error);
+      set({ error: 'Error fetching modules' });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchCompletedModules: async (courseId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/courses/${courseId}/completed-modules`);
       set({ completedModules: response.data });
     } catch (error) {
       console.error('Error fetching completed modules:', error);
+      set({ error: 'Error fetching completed modules' });
+    } finally {
+      set({ loading: false });
     }
   },
   handleModuleComplete: (moduleId) => set((state) => ({
@@ -43,7 +55,7 @@ const useModuleStore = create((set) => ({
 }));
 
 const Module = ({ courseId }) => {
-  const { modules, completedModules, showPopup, fetchModules, fetchCompletedModules, handleModuleComplete, handleButtonClick, handleConfirm, handleCancel } = useModuleStore();
+  const { modules, completedModules, showPopup, loading, error, fetchModules, fetchCompletedModules, handleModuleComplete, handleButtonClick, handleConfirm, handleCancel } = useModuleStore();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(moduleSchema),
   });
@@ -57,6 +69,8 @@ const Module = ({ courseId }) => {
     <ProtectedRoute>
       <div className="container mx-auto py-8 bg-gray-900 text-white">
         <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
+        {loading && <LoadingSpinner />}
+        {error && <ErrorHandling error={error} />}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md">
           <ul className="list-disc list-inside">
             {modules.map((module) => (

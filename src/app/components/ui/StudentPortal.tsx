@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProtectedRoute from './ProtectedRoute';
 import { z } from 'zod';
-import { useStore } from 'zustand';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   id: z.string(),
@@ -22,34 +24,44 @@ const useStudentStore = create((set) => ({
   progress: {},
   certificates: [],
   error: null,
+  loading: false,
   fetchCourses: async (studentId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/students/${studentId}/courses`);
       set({ courses: response.data });
     } catch (error) {
       set({ error: 'Error fetching courses' });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchProgress: async (studentId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/students/${studentId}/progress`);
       set({ progress: response.data });
     } catch (error) {
       set({ error: 'Error fetching progress' });
+    } finally {
+      set({ loading: false });
     }
   },
   fetchCertificates: async (studentId) => {
+    set({ loading: true, error: null });
     try {
       const response = await axios.get(`/api/students/${studentId}/certificates`);
       set({ certificates: response.data });
     } catch (error) {
       set({ error: 'Error fetching certificates' });
+    } finally {
+      set({ loading: false });
     }
   },
 }));
 
 const StudentPortal = ({ studentId }) => {
-  const { courses, progress, certificates, error, fetchCourses, fetchProgress, fetchCertificates } = useStudentStore();
+  const { courses, progress, certificates, error, loading, fetchCourses, fetchProgress, fetchCertificates } = useStudentStore();
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(courseSchema),
   });
@@ -64,7 +76,8 @@ const StudentPortal = ({ studentId }) => {
     <ProtectedRoute>
       <div className="container mx-auto py-8 bg-gray-900 text-white">
         <h2 className="text-2xl font-bold mb-4 text-gray-100">Student Portal</h2>
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <ErrorHandling error={error} />}
+        {loading && <LoadingSpinner />}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-8">
           <h3 className="text-xl font-semibold mb-4 text-gray-100">My Courses</h3>
           <ul className="list-disc list-inside">

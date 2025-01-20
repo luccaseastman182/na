@@ -3,7 +3,9 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { z } from 'zod';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -21,18 +23,34 @@ const courseSchema = z.object({
 const useCourseStore = create((set) => ({
   course: null,
   progress: 0,
+  error: null,
+  loading: false,
   fetchCourseDetails: async (id) => {
-    const response = await axios.get(`/api/courses/${id}`);
-    set({ course: response.data });
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`/api/courses/${id}`);
+      set({ course: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching course details' });
+    } finally {
+      set({ loading: false });
+    }
   },
   fetchProgress: async (id) => {
-    const response = await axios.get(`/api/courses/${id}/progress`);
-    set({ progress: response.data.progress });
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`/api/courses/${id}/progress`);
+      set({ progress: response.data.progress });
+    } catch (error) {
+      set({ error: 'Error fetching progress' });
+    } finally {
+      set({ loading: false });
+    }
   },
 }));
 
 const CourseDetails = () => {
-  const { course, progress, fetchCourseDetails, fetchProgress } = useCourseStore();
+  const { course, progress, error, loading, fetchCourseDetails, fetchProgress } = useCourseStore();
   const router = useRouter();
   const { id } = router.query;
 
@@ -42,6 +60,14 @@ const CourseDetails = () => {
       fetchProgress(id);
     }
   }, [id, fetchCourseDetails, fetchProgress]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorHandling error={error} />;
+  }
 
   if (!course) {
     return <div>Loading...</div>;

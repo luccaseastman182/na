@@ -4,7 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { authjs } from 'authjs';
-import { useStore } from 'zustand';
+import { create } from 'zustand';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorHandling from './ErrorHandling';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -20,6 +22,7 @@ const useAuthStore = create((set) => ({
       alert('Login successful');
     } catch (error) {
       console.error('Error logging in:', error);
+      set({ error });
       alert('Failed to login');
     }
   },
@@ -30,17 +33,8 @@ const useAuthStore = create((set) => ({
       alert('Signup successful');
     } catch (error) {
       console.error('Error signing up:', error);
+      set({ error });
       alert('Failed to signup');
-    }
-  },
-  updateAccount: async (data) => {
-    try {
-      const response = await authjs.updateAccount(data);
-      set({ user: response.data });
-      alert('Account updated successfully');
-    } catch (error) {
-      console.error('Error updating account:', error);
-      alert('Failed to update account');
     }
   },
 }));
@@ -51,13 +45,24 @@ const LoginSignup = () => {
     resolver: zodResolver(schema),
   });
 
-  const { login, signup, updateAccount } = useAuthStore();
+  const { login, signup } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const onSubmit = async (data) => {
-    if (isLogin) {
-      await login(data);
-    } else {
-      await signup(data);
+    setLoading(true);
+    setError(null);
+    try {
+      if (isLogin) {
+        await login(data);
+      } else {
+        await signup(data);
+      }
+    } catch (error) {
+      console.error('Error during authentication:', error);
+      setError(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,6 +96,8 @@ const LoginSignup = () => {
             {isLogin ? 'Login' : 'Signup'}
           </button>
         </form>
+        {loading && <LoadingSpinner />}
+        {error && <ErrorHandling error={error} />}
         <p className="mt-4 text-center text-gray-300">
           {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
           <button
@@ -98,14 +105,6 @@ const LoginSignup = () => {
             className="text-blue-500 underline"
           >
             {isLogin ? 'Signup' : 'Login'}
-          </button>
-        </p>
-        <p className="mt-4 text-center text-gray-300">
-          <button
-            onClick={() => updateAccount({ email: 'newemail@example.com', password: 'newpassword' })}
-            className="text-blue-500 underline"
-          >
-            Update Account
           </button>
         </p>
       </div>
