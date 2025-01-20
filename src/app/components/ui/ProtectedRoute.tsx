@@ -1,9 +1,9 @@
 import React from 'react';
-import { useSession } from 'next-auth/react';
+import { authjs } from 'authjs';
 import { useRouter } from 'next/navigation';
 
 const ProtectedRoute = ({ children, roles }) => {
-  const { data: session, status } = useSession();
+  const { data: session, status } = authjs();
   const router = useRouter();
 
   React.useEffect(() => {

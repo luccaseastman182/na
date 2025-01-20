@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { authjs } from 'authjs';
 import { z } from 'zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
-import MarkCompleteButton from './MarkCompleteButton';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -22,7 +21,7 @@ const courseSchema = z.object({
 });
 
 const AdminPortal = () => {
-  const { data: session, status } = useSession();
+  const { data: session, status } = authjs();
   const router = useRouter();
   const [courses, setCourses] = useState([]);
   const { register, control, handleSubmit, formState: { errors } } = useForm({
@@ -75,63 +74,62 @@ const AdminPortal = () => {
   const CourseCreator = dynamic(() => import('./CourseCreator'), { ssr: false });
 
   return (
-    <div className="container mx-auto p-4 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">Admin Portal</h1>
+    <div className="container mx-auto p-4 bg-gray-900 text-white">
+      <h1 className="text-2xl font-bold mb-4">Admin Portal</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
         <div className="mb-4">
-          <label className="block text-gray-700">Course Title</label>
+          <label className="block">Course Title</label>
           <input
             type="text"
             {...register('title')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.title && <p className="text-red-500">{errors.title.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Course Description</label>
+          <label className="block">Course Description</label>
           <textarea
             {...register('description')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.description && <p className="text-red-500">{errors.description.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Course Price</label>
+          <label className="block">Course Price</label>
           <input
             type="number"
             {...register('price')}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
           />
           {errors.price && <p className="text-red-500">{errors.price.message}</p>}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Topics</label>
+          <label className="block">Topics</label>
           {topicFields.map((topic, topicIndex) => (
             <div key={topic.id} className="mb-4">
-              <label className="block text-gray-700">Topic Title</label>
+              <label className="block">Topic Title</label>
               <input
                 type="text"
                 {...register(`topics.${topicIndex}.title`)}
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
               />
               {errors.topics?.[topicIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].title.message}</p>}
-              <label className="block text-gray-700">Modules</label>
+              <label className="block">Modules</label>
               {moduleFields.map((module, moduleIndex) => (
                 <div key={module.id} className="mb-4">
-                  <label className="block text-gray-700">Module Title</label>
+                  <label className="block">Module Title</label>
                   <input
                     type="text"
                     {...register(`topics.${topicIndex}.modules.${moduleIndex}.title`)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
                   />
                   {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.title && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].title.message}</p>}
-                  <label className="block text-gray-700">Module Content</label>
+                  <label className="block">Module Content</label>
                   <textarea
                     {...register(`topics.${topicIndex}.modules.${moduleIndex}.content`)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-gray-800 text-white"
                   />
                   {errors.topics?.[topicIndex]?.modules?.[moduleIndex]?.content && <p className="text-red-500">{errors.topics[topicIndex].modules[moduleIndex].content.message}</p>}
-                  <MarkCompleteButton moduleId={module.id} onComplete={() => {}} />
                   <button type="button" onClick={() => removeModule(moduleIndex)} className="bg-red-500 text-white p-2 rounded mt-2">Remove Module</button>
                 </div>
               ))}
@@ -143,17 +141,17 @@ const AdminPortal = () => {
         </div>
         <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
       </form>
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Existing Courses</h2>
+      <h2 className="text-xl font-bold mb-4">Existing Courses</h2>
       <ul>
         {courses.map((course) => (
           <li key={course.id} className="mb-2">
-            <h3 className="text-lg font-bold text-gray-800">{course.title}</h3>
-            <p className="text-gray-700">{course.description}</p>
-            <p className="text-gray-700">Price: ${course.price}</p>
+            <h3 className="text-lg font-bold">{course.title}</h3>
+            <p>{course.description}</p>
+            <p>Price: ${course.price}</p>
           </li>
         ))}
       </ul>
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Course Creation</h2>
+      <h2 className="text-xl font-bold mb-4">Course Creation</h2>
       <CourseCreator />
     </div>
   );

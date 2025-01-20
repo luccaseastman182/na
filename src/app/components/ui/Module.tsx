@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import MarkCompleteButton from './MarkCompleteButton';
 
 const Module = ({ courseId }) => {
   const [modules, setModules] = useState([]);
@@ -47,14 +46,13 @@ const Module = ({ courseId }) => {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 bg-gray-900 text-white">
       <h2 className="text-2xl font-bold mb-4">Course Modules</h2>
-      <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">
         <ul className="list-disc list-inside">
           {modules.map((module) => (
             <li key={module.id} className="mb-2">
               {module.title}
-              <MarkCompleteButton moduleId={module.id} onComplete={() => handleModuleComplete(module.id)} />
               {showPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                   <div className="bg-white p-4 rounded shadow-md">

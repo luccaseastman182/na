@@ -18,13 +18,13 @@ const CourseList = () => {
   }, []);
 
   return (
-    <div className="container mx-auto py-8 bg-gray-100">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Available Courses</h2>
+    <div className="container mx-auto py-8 bg-gray-900 text-white">
+      <h2 className="text-2xl font-bold mb-4 text-gray-100">Available Courses</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map((course) => (
-          <div key={course.id} className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">{course.title}</h3>
-            <p className="text-gray-700 mb-4">{course.description}</p>
+          <div key={course.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold mb-2 text-gray-100">{course.title}</h3>
+            <p className="text-gray-300 mb-4">{course.description}</p>
             <a href={`/courses/${course.id}`} className="text-blue-500 hover:underline">View Details</a>
           </div>
         ))}
