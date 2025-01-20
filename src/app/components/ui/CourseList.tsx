@@ -1,21 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useStore } from 'zustand';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+const courseSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  price: z.number().min(1, 'Price is required'),
+});
+
+const useCourseStore = create((set) => ({
+  courses: [],
+  fetchCourses: async () => {
+    const response = await axios.get('/api/courses');
+    set({ courses: response.data });
+  },
+}));
 
 const CourseList = () => {
-  const [courses, setCourses] = useState([]);
+  const { courses, fetchCourses } = useCourseStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(courseSchema),
+  });
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get('/api/courses');
-        setCourses(response.data);
-      } catch (error) {
-        console.error('Error fetching courses:', error);
-      }
-    };
-
     fetchCourses();
-  }, []);
+  }, [fetchCourses]);
 
   return (
     <div className="container mx-auto py-8 bg-gray-900 text-white">

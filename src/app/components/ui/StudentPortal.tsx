@@ -1,45 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ProtectedRoute from './ProtectedRoute';
+import { z } from 'zod';
+import { useStore } from 'zustand';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const courseSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1, 'Title is required'),
+  progress: z.number().min(0).max(100),
+  certificates: z.array(z.object({
+    id: z.string(),
+    title: z.string().min(1, 'Certificate title is required'),
+    url: z.string().url('Invalid URL'),
+  })),
+});
+
+const useStudentStore = create((set) => ({
+  courses: [],
+  progress: {},
+  certificates: [],
+  error: null,
+  fetchCourses: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/courses`);
+      set({ courses: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching courses' });
+    }
+  },
+  fetchProgress: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/progress`);
+      set({ progress: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching progress' });
+    }
+  },
+  fetchCertificates: async (studentId) => {
+    try {
+      const response = await axios.get(`/api/students/${studentId}/certificates`);
+      set({ certificates: response.data });
+    } catch (error) {
+      set({ error: 'Error fetching certificates' });
+    }
+  },
+}));
 
 const StudentPortal = ({ studentId }) => {
-  const [courses, setCourses] = useState([]);
-  const [progress, setProgress] = useState({});
-  const [certificates, setCertificates] = useState([]);
-  const [error, setError] = useState(null);
+  const { courses, progress, certificates, error, fetchCourses, fetchProgress, fetchCertificates } = useStudentStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(courseSchema),
+  });
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}/courses`);
-        setCourses(response.data);
-      } catch (error) {
-        setError('Error fetching courses');
-      }
-    };
-
-    const fetchProgress = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}/progress`);
-        setProgress(response.data);
-      } catch (error) {
-        setError('Error fetching progress');
-      }
-    };
-
-    const fetchCertificates = async () => {
-      try {
-        const response = await axios.get(`/api/students/${studentId}/certificates`);
-        setCertificates(response.data);
-      } catch (error) {
-        setError('Error fetching certificates');
-      }
-    };
-
-    fetchCourses();
-    fetchProgress();
-    fetchCertificates();
-  }, [studentId]);
+    fetchCourses(studentId);
+    fetchProgress(studentId);
+    fetchCertificates(studentId);
+  }, [studentId, fetchCourses, fetchProgress, fetchCertificates]);
 
   return (
     <ProtectedRoute>

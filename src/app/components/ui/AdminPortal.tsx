@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import ProtectedRoute from './ProtectedRoute';
+import { useStore } from 'zustand';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -21,10 +22,22 @@ const courseSchema = z.object({
   })).min(7, 'Course must have at least 7 topics'),
 });
 
+const useCourseStore = create((set) => ({
+  courses: [],
+  fetchCourses: async () => {
+    const response = await axios.get('/api/courses');
+    set({ courses: response.data });
+  },
+  addCourse: async (data) => {
+    await axios.post('/api/courses', data);
+    set((state) => ({ courses: [...state.courses, data] }));
+  },
+}));
+
 const AdminPortal = () => {
   const { data: session, status } = authjs();
   const router = useRouter();
-  const [courses, setCourses] = useState([]);
+  const { courses, fetchCourses, addCourse } = useCourseStore();
   const { register, control, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(courseSchema),
   });
@@ -48,17 +61,12 @@ const AdminPortal = () => {
   }, [status, session, router]);
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const response = await axios.get('/api/courses');
-      setCourses(response.data);
-    };
-
     fetchCourses();
-  }, []);
+  }, [fetchCourses]);
 
   const onSubmit = async (data) => {
     try {
-      await axios.post('/api/courses', data);
+      await addCourse(data);
       alert('Course created successfully');
     } catch (error) {
       console.error('Error creating course:', error);

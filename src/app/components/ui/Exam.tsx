@@ -1,55 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ProtectedRoute from './ProtectedRoute';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useStore } from 'zustand';
 
-const Exam = ({ courseId }) => {
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState({});
-  const [score, setScore] = useState(null);
-  const [error, setError] = useState(null);
-  const [attempts, setAttempts] = useState(0);
-  const [examDate, setExamDate] = useState(null);
-  const [isEligible, setIsEligible] = useState(false);
+const answerSchema = z.object({
+  answers: z.record(z.string().min(1, 'Answer is required')),
+});
 
-  useEffect(() => {
-    const checkEligibility = async () => {
-      try {
-        const response = await axios.get(`/api/courses/${courseId}/eligibility`);
-        setIsEligible(response.data.isEligible);
-      } catch (error) {
-        setError('Error checking eligibility');
-      }
-    };
-
-    checkEligibility();
-  }, [courseId]);
-
-  const fetchQuestions = async () => {
+const useExamStore = create((set) => ({
+  questions: [],
+  answers: {},
+  score: null,
+  error: null,
+  attempts: 0,
+  examDate: null,
+  isEligible: false,
+  fetchQuestions: async (courseId) => {
     try {
       const response = await axios.get(`/api/courses/${courseId}/exam`);
-      setQuestions(response.data);
-      setExamDate(new Date().toISOString());
+      set({ questions: response.data, examDate: new Date().toISOString() });
     } catch (error) {
-      setError('Error fetching exam questions');
+      set({ error: 'Error fetching exam questions' });
     }
-  };
-
-  const handleAnswerChange = (questionId, answer) => {
-    setAnswers({
-      ...answers,
-      [questionId]: answer,
-    });
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  },
+  checkEligibility: async (courseId) => {
+    try {
+      const response = await axios.get(`/api/courses/${courseId}/eligibility`);
+      set({ isEligible: response.data.isEligible });
+    } catch (error) {
+      set({ error: 'Error checking eligibility' });
+    }
+  },
+  submitExam: async (courseId, answers) => {
     try {
       const response = await axios.post(`/api/courses/${courseId}/exam/submit`, { answers });
-      setScore(response.data.score);
-      setAttempts(attempts + 1);
+      set((state) => ({ score: response.data.score, attempts: state.attempts + 1 }));
     } catch (error) {
-      setError('Error submitting exam');
+      set({ error: 'Error submitting exam' });
     }
+  },
+  setAnswer: (questionId, answer) => set((state) => ({
+    answers: {
+      ...state.answers,
+      [questionId]: answer,
+    },
+  })),
+}));
+
+const Exam = ({ courseId }) => {
+  const { questions, answers, score, error, attempts, examDate, isEligible, fetchQuestions, checkEligibility, submitExam, setAnswer } = useExamStore();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(answerSchema),
+  });
+
+  useEffect(() => {
+    checkEligibility(courseId);
+  }, [courseId, checkEligibility]);
+
+  const onSubmit = (data) => {
+    submitExam(courseId, data.answers);
   };
 
   return (
@@ -66,11 +78,11 @@ const Exam = ({ courseId }) => {
           </div>
         ) : (
           <div className="bg-gray-800 p-4 rounded-lg shadow-md">
-            <button onClick={fetchQuestions} className="bg-blue-500 text-white px-4 py-2 rounded mb-4" disabled={!isEligible}>
+            <button onClick={() => fetchQuestions(courseId)} className="bg-blue-500 text-white px-4 py-2 rounded mb-4" disabled={!isEligible}>
               {isEligible ? 'Start Exam' : 'Complete All Modules to Take Exam'}
             </button>
             {questions.length > 0 && (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 {questions.map((question) => (
                   <div key={question.id} className="mb-4">
                     <p className="text-lg text-gray-300">{question.text}</p>
@@ -78,14 +90,15 @@ const Exam = ({ courseId }) => {
                       <label key={option} className="block text-gray-300">
                         <input
                           type="radio"
-                          name={`question-${question.id}`}
+                          name={`answers.${question.id}`}
                           value={option}
-                          onChange={() => handleAnswerChange(question.id, option)}
+                          {...register(`answers.${question.id}`)}
                           className="mr-2"
                         />
                         {option}
                       </label>
                     ))}
+                    {errors.answers?.[question.id] && <p className="text-red-500">{errors.answers[question.id].message}</p>}
                   </div>
                 ))}
                 <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
