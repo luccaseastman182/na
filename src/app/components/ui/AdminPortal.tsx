@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import dynamic from 'next/dynamic';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -56,6 +57,8 @@ const AdminPortal = () => {
   if (session?.user.role !== 'admin') {
     return <div>Access denied</div>;
   }
+
+  const CourseCreator = dynamic(() => import('./CourseCreator'), { ssr: false });
 
   return (
     <div className="container mx-auto p-4">
@@ -122,6 +125,8 @@ const AdminPortal = () => {
           </li>
         ))}
       </ul>
+      <h2 className="text-xl font-bold mb-4">Course Creation</h2>
+      <CourseCreator />
     </div>
   );
 };

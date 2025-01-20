@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Exam = ({ courseId }) => {
@@ -6,11 +6,28 @@ const Exam = ({ courseId }) => {
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
   const [error, setError] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [examDate, setExamDate] = useState(null);
+  const [isEligible, setIsEligible] = useState(false);
+
+  useEffect(() => {
+    const checkEligibility = async () => {
+      try {
+        const response = await axios.get(`/api/courses/${courseId}/eligibility`);
+        setIsEligible(response.data.isEligible);
+      } catch (error) {
+        setError('Error checking eligibility');
+      }
+    };
+
+    checkEligibility();
+  }, [courseId]);
 
   const fetchQuestions = async () => {
     try {
       const response = await axios.get(`/api/courses/${courseId}/exam`);
       setQuestions(response.data);
+      setExamDate(new Date().toISOString());
     } catch (error) {
       setError('Error fetching exam questions');
     }
@@ -23,10 +40,12 @@ const Exam = ({ courseId }) => {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
       const response = await axios.post(`/api/courses/${courseId}/exam/submit`, { answers });
       setScore(response.data.score);
+      setAttempts(attempts + 1);
     } catch (error) {
       setError('Error submitting exam');
     }
@@ -40,11 +59,13 @@ const Exam = ({ courseId }) => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <p className="text-lg">Your score: {score}</p>
           <p className="text-lg">{score >= 80 ? 'Pass' : 'Fail'}</p>
+          <p className="text-lg">Attempts: {attempts}</p>
+          <p className="text-lg">Exam Date: {examDate}</p>
         </div>
       ) : (
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <button onClick={fetchQuestions} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">
-            Start Exam
+          <button onClick={fetchQuestions} className="bg-blue-500 text-white px-4 py-2 rounded mb-4" disabled={!isEligible}>
+            {isEligible ? 'Start Exam' : 'Complete All Modules to Take Exam'}
           </button>
           {questions.length > 0 && (
             <form onSubmit={handleSubmit}>
