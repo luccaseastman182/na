@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { create } from 'zustand';
+import Notification from './Notification';
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -44,20 +45,21 @@ const CourseCreator = () => {
   const { addCourse } = useCourseStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState({ message: '', type: '' });
 
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
     try {
       await addCourse(data);
-      alert('Course created successfully');
+      setNotification({ message: 'Course created successfully', type: 'success' });
     } catch (error) {
       console.error('Error creating course:', error);
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error ||
                           error.message ||
                           'Failed to create course';
-      alert(errorMessage);
+      setNotification({ message: errorMessage, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -131,6 +133,7 @@ const CourseCreator = () => {
         </div>
         <button type="submit" className="bg-green-500 text-white p-2 rounded">Create Course</button>
       </form>
+      <Notification message={notification.message} type={notification.type} />
     </div>
   );
 };
